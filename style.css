@@ -1,0 +1,107 @@
+/* Fonte Moderna */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+}
+
+:root {
+    --primary: #2c3e50; /* Cor padrão, muda via JS */
+    --accent: #e74c3c;
+}
+
+/* Gradients e Cores */
+.bg-dark-gradient {
+    background: linear-gradient(135deg, var(--primary) 0%, #000 100%) !important;
+}
+
+.text-primary { color: var(--primary) !important; }
+.btn-primary { 
+    background-color: var(--primary); 
+    border-color: var(--primary); 
+}
+.btn-primary:hover {
+    background-color: #000;
+    border-color: #000;
+}
+
+/* Animações */
+.fade-in { animation: fadeIn 0.8s ease-in-out; }
+.fade-in-up { animation: fadeInUp 0.5s ease-out; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Cards de Horário */
+.slot-btn {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 15px;
+    border: 1px solid transparent;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.slot-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    border-color: var(--primary);
+}
+
+.slot-btn h5 { font-size: 1.2rem; margin: 0; font-weight: 600; color: var(--primary); }
+.slot-btn small { color: #888; }
+
+.slot-btn.booked {
+    background-color: #f1f3f5;
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+.slot-btn.booked h5 { color: #aaa; text-decoration: line-through; }
+
+/* Login Admin */
+.login-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(44,62,80,0.9));
+    z-index: 9999;
+    display: flex; justify-content: center; align-items: center;
+}
+
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 400px;
+}
+
+.avatar-icon {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 24px;
+}
+
+.hidden { display: none !important; }
+
+/* Lista Admin */
+.list-group-item {
+    border-left: 4px solid transparent;
+    transition: 0.2s;
+    margin-bottom: 5px;
+    border-radius: 8px !important;
+    border: none;
+    background: #f8f9fa;
+}
+.list-group-item:hover {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-left-color: var(--primary);
+}
