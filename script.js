@@ -9,27 +9,132 @@ const defaultDB = {
         end: 19, 
         duration: 30 
     },
-    appointments: []
+    appointments: [],
+    users: [] // Novo array de usuários
 };
 
-let db = JSON.parse(localStorage.getItem('barberDB_v3')) || defaultDB;
+let db = JSON.parse(localStorage.getItem('barberDB_v4')) || defaultDB;
+let currentUser = JSON.parse(sessionStorage.getItem('barberCurrentUser')) || null;
 
 function saveDB() {
-    localStorage.setItem('barberDB_v3', JSON.stringify(db));
+    localStorage.setItem('barberDB_v4', JSON.stringify(db));
     applyTheme();
 }
 
 function applyTheme() {
     document.documentElement.style.setProperty('--primary', db.config.color);
     
-    // Atualiza nome em todos os lugares
+    // Atualiza nome nos elementos
     const shopNameElements = ['nav-shop-name', 'footer-shop-name'];
     shopNameElements.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.innerText = db.config.name;
     });
     
-    document.title = db.config.name;
+    // Se não estiver no admin, muda o título
+    if (!document.title.includes("Administrativo")) {
+        document.title = db.config.name;
+    }
+}
+
+// =========================================
+// SISTEMA DE AUTENTICAÇÃO (CLIENTE)
+// =========================================
+
+function openAuthModal(mode) {
+    $('#auth-modal').fadeIn(300).css('display', 'flex');
+    toggleAuthForms(mode);
+}
+
+function closeAuthModal() {
+    $('#auth-modal').fadeOut(300);
+}
+
+function toggleAuthForms(mode) {
+    if(mode === 'login') {
+        $('#form-login').show();
+        $('#form-register').hide();
+    } else {
+        $('#form-login').hide();
+        $('#form-register').show();
+    }
+}
+
+function register() {
+    const name = $('#reg-name').val();
+    const phone = $('#reg-phone').val();
+    const email = $('#reg-email').val();
+    const pass = $('#reg-pass').val();
+
+    if(!name || !phone || !email || !pass) {
+        alert('⚠️ Preencha todos os campos!');
+        return;
+    }
+
+    // Verifica se email já existe
+    const exists = db.users.find(u => u.email === email);
+    if(exists) {
+        alert('❌ Este e-mail já está cadastrado.');
+        return;
+    }
+
+    const newUser = { name, phone, email, pass };
+    db.users.push(newUser);
+    saveDB();
+
+    loginUser(newUser); // Loga automaticamente
+    alert('✅ Conta criada com sucesso!');
+    closeAuthModal();
+}
+
+function login() {
+    const email = $('#login-email').val();
+    const pass = $('#login-pass').val();
+
+    const user = db.users.find(u => u.email === email && u.pass === pass);
+
+    if(user) {
+        loginUser(user);
+        closeAuthModal();
+    } else {
+        alert('❌ E-mail ou senha incorretos.');
+    }
+}
+
+function loginUser(user) {
+    currentUser = user;
+    sessionStorage.setItem('barberCurrentUser', JSON.stringify(user));
+    updateClientUI();
+    // Recarrega os slots para atualizar os botões
+    const date = $('#client-date').val();
+    if(date) renderSlots(date);
+}
+
+function logout() {
+    currentUser = null;
+    sessionStorage.removeItem('barberCurrentUser');
+    updateClientUI();
+    window.location.reload();
+}
+
+function updateClientUI() {
+    if(currentUser) {
+        // Navbar
+        $('#user-area-guest').hide();
+        $('#user-area-logged').show();
+        $('#display-username').text(currentUser.name);
+        
+        // Card de Agendamento
+        $('#guest-alert').hide();
+        $('#logged-user-info').show();
+        $('#info-client-name').text(currentUser.name);
+        $('#info-client-phone').text(currentUser.phone);
+    } else {
+        $('#user-area-guest').show();
+        $('#user-area-logged').hide();
+        $('#guest-alert').show();
+        $('#logged-user-info').hide();
+    }
 }
 
 // =========================================
@@ -37,6 +142,7 @@ function applyTheme() {
 // =========================================
 function initClient() {
     applyTheme();
+    updateClientUI();
     
     const today = new Date().toISOString().split('T')[0];
     $('#client-date').val(today).attr('min', today);
@@ -66,12 +172,26 @@ function renderSlots(date) {
             let isTaken = taken.includes(time);
             let statusClass = isTaken ? 'booked' : '';
             let statusText = isTaken ? 'Ocupado' : 'Disponível';
-            let action = isTaken ? '' : `onclick="book('${date}', '${time}')"`;
+            
+            // LÓGICA DE BLOQUEIO:
+            // Se ocupado -> sem ação
+            // Se livre E logado -> book()
+            // Se livre E deslogado -> openAuthModal()
+            let action = '';
+            if (!isTaken) {
+                if (currentUser) {
+                    action = `onclick="book('${date}', '${time}')"`;
+                } else {
+                    action = `onclick="alertLoginNeeded()"`;
+                    statusText = "Entrar p/ Agendar"; // Texto muda se não logado
+                }
+            }
 
             area.append(`
                 <button class="slot-btn ${statusClass}" ${action}>
                     <span class="slot-time">${time}</span>
                     <span class="slot-status">${statusText}</span>
+                    ${!isTaken && !currentUser ? '<i class="fas fa-lock mt-1 text-muted" style="font-size:0.8rem"></i>' : ''}
                 </button>
             `);
             
@@ -89,29 +209,34 @@ function renderSlots(date) {
     }
 }
 
+function alertLoginNeeded() {
+    alert("🔒 Você precisa fazer login para agendar!");
+    openAuthModal('login');
+}
+
 function book(date, time) {
-    const name = $('#client-name').val().trim();
-    
-    if(!name) { 
-        alert('⚠️ Por favor, digite seu nome completo!'); 
-        $('#client-name').focus();
-        return; 
+    // Verificação de segurança dupla
+    if(!currentUser) {
+        alertLoginNeeded();
+        return;
     }
 
-    const dateObj = new Date(date + 'T00:00:00');
-    const dateFormatted = dateObj.toLocaleDateString('pt-BR', { 
-        day: '2-digit', 
-        month: 'long', 
-        year: 'numeric' 
-    });
+    const name = currentUser.name;
+    const phone = currentUser.phone;
 
-    if(confirm(`✅ Confirmar agendamento?\n\n👤 Nome: ${name}\n📅 Data: ${dateFormatted}\n🕐 Horário: ${time}`)) {
-        db.appointments.push({ date, time, client: name });
+    const dateObj = new Date(date + 'T00:00:00');
+    const dateFormatted = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
+
+    if(confirm(`✅ Confirmar agendamento?\n\n👤 ${name}\n📞 ${phone}\n📅 ${dateFormatted} às ${time}`)) {
+        db.appointments.push({ 
+            date, 
+            time, 
+            client: name, 
+            phone: phone 
+        });
         saveDB();
         renderSlots(date);
-        
-        alert(`🎉 Agendamento confirmado com sucesso!\n\nNos vemos em ${dateFormatted} às ${time}!`);
-        $('#client-name').val('');
+        alert(`🎉 Agendado com sucesso!`);
     }
 }
 
@@ -127,7 +252,6 @@ function initAdmin() {
     $('#cfg-end').val(db.config.end);
     $('#cfg-duration').val(db.config.duration);
 
-    // Preview da cor
     $('#cfg-color').on('input', function() {
         $('#color-preview').css('background', this.value).text(this.value);
     });
@@ -142,40 +266,24 @@ function initAdmin() {
 
 function checkLogin() {
     const pass = $('#admin-pass').val();
-    
     if(pass === 'admin') {
         $('#login-modal').fadeOut(300);
         renderAdminList($('#admin-date').val());
     } else {
-        alert('❌ Senha incorreta! Tente novamente.');
+        alert('❌ Senha incorreta!');
         $('#admin-pass').val('').focus();
     }
 }
 
 function saveSettings() {
-    const newName = $('#cfg-name').val().trim();
-    const newColor = $('#cfg-color').val();
-    const newStart = parseInt($('#cfg-start').val());
-    const newEnd = parseInt($('#cfg-end').val());
-    
-    if(!newName) {
-        alert('⚠️ O nome da barbearia não pode estar vazio!');
-        return;
-    }
-    
-    if(newStart >= newEnd) {
-        alert('⚠️ O horário de abertura deve ser menor que o de fechamento!');
-        return;
-    }
-    
-    db.config.name = newName;
-    db.config.color = newColor;
-    db.config.start = newStart;
-    db.config.end = newEnd;
+    db.config.name = $('#cfg-name').val();
+    db.config.color = $('#cfg-color').val();
+    db.config.start = parseInt($('#cfg-start').val());
+    db.config.end = parseInt($('#cfg-end').val());
     db.config.duration = $('#cfg-duration').val();
     
     saveDB();
-    alert('✅ Configurações salvas com sucesso!\n\nO site foi atualizado.');
+    alert('✅ Configurações salvas!');
 }
 
 function renderAdminList(date) {
@@ -185,33 +293,16 @@ function renderAdminList(date) {
     const appts = db.appointments.filter(a => a.date === date);
     appts.sort((a,b) => a.time.localeCompare(b.time));
 
-    // Estatísticas
+    // Stats
     const totalSlots = calculateTotalSlots();
     const bookedSlots = appts.length;
-    const availableSlots = totalSlots - bookedSlots;
-
     $('#appt-stats').html(`
-        <div class="stat-item">
-            <span class="stat-value">${totalSlots}</span>
-            <span class="stat-label">Total de Horários</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-value">${bookedSlots}</span>
-            <span class="stat-label">Agendados</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-value">${availableSlots}</span>
-            <span class="stat-label">Disponíveis</span>
-        </div>
+        <div class="stat-item"><span class="stat-value">${totalSlots}</span><span class="stat-label">Vagas</span></div>
+        <div class="stat-item"><span class="stat-value">${bookedSlots}</span><span class="stat-label">Ocupadas</span></div>
     `);
 
     if(appts.length === 0) {
-        list.html(`
-            <li class="text-center text-muted py-5">
-                <i class="fas fa-calendar-times fa-3x mb-3" style="color: #ddd;"></i>
-                <p>Nenhum agendamento para esta data</p>
-            </li>
-        `);
+        list.html('<li class="text-center text-muted py-5"><p>Nenhum agendamento hoje</p></li>');
         return;
     }
 
@@ -220,14 +311,13 @@ function renderAdminList(date) {
             <li>
                 <div class="appt-info">
                     <span class="appt-time">${app.time}</span>
-                    <span class="appt-client">
-                        <i class="fas fa-user"></i> ${app.client}
-                    </span>
+                    <div>
+                        <span class="appt-client d-block"><i class="fas fa-user"></i> ${app.client}</span>
+                        <small class="text-muted"><i class="fas fa-phone"></i> ${app.phone || 'Sem telefone'}</small>
+                    </div>
                 </div>
                 <div class="appt-actions">
-                    <button class="btn btn-danger btn-sm" onclick="cancel('${app.date}', '${app.time}')">
-                        <i class="fas fa-trash-alt"></i> Cancelar
-                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="cancel('${app.date}', '${app.time}')"><i class="fas fa-trash-alt"></i></button>
                 </div>
             </li>
         `);
@@ -235,31 +325,20 @@ function renderAdminList(date) {
 }
 
 function calculateTotalSlots() {
-    const cfg = db.config;
-    const duration = parseInt(cfg.duration);
-    const start = parseInt(cfg.start);
-    const end = parseInt(cfg.end);
-    const totalMinutes = (end - start) * 60;
-    return Math.floor(totalMinutes / duration);
+    return Math.floor(((db.config.end - db.config.start) * 60) / db.config.duration);
 }
 
 function cancel(date, time) {
-    const appointment = db.appointments.find(a => a.date === date && a.time === time);
-    
-    if(confirm(`❌ Tem certeza que deseja cancelar?\n\n👤 Cliente: ${appointment.client}\n🕐 Horário: ${time}`)) {
+    if(confirm('Cancelar agendamento?')) {
         db.appointments = db.appointments.filter(a => !(a.date === date && a.time === time));
         saveDB();
         renderAdminList(date);
-        alert('✅ Agendamento cancelado com sucesso!');
     }
 }
 
 function resetSystem() {
-    if(confirm('⚠️ ATENÇÃO: Esta ação irá apagar TODOS os agendamentos e configurações!\n\nDeseja realmente continuar?')) {
-        if(confirm('🚨 ÚLTIMA CONFIRMAÇÃO: Os dados não poderão ser recuperados!')) {
-            localStorage.removeItem('barberDB_v3');
-            alert('✅ Sistema resetado! A página será recarregada.');
-            location.reload();
-        }
+    if(confirm('ATENÇÃO: Apagar tudo (incluindo usuários)?')) {
+        localStorage.removeItem('barberDB_v4');
+        location.reload();
     }
 }
