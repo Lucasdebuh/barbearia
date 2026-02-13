@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barber Premium</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body onload="initClient()">
+
+    <div class="bg-shape"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent fixed-top py-3">
+        <div class="container">
+            <a class="navbar-brand font-weight-bold" href="#">
+                <i class="fas fa-cut text-gold mr-2"></i> <span id="nav-shop-name">Carregando...</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ml-auto align-items-center">
+                    <div id="user-area-guest" class="d-flex align-items-center">
+                        <li class="nav-item">
+                            <a class="nav-link font-weight-bold mr-3" href="#" onclick="openAuthModal('login')">Entrar</a>
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-gold rounded-pill px-4 shadow-sm" onclick="openAuthModal('register')">Cadastrar</button>
+                        </li>
+                    </div>
+                    <div id="user-area-logged" style="display:none;" class="d-flex align-items-center">
+                        <span class="text-white mr-3 small">Olá, <b id="display-username" class="text-gold">Cliente</b></span>
+                        <button class="btn btn-outline-light btn-sm rounded-pill px-3" onclick="logout()">Sair</button>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero text-center text-white d-flex align-items-center">
+        <div class="container mt-5">
+            <h1 class="display-4 font-weight-bold mb-3 fade-in-up">Agende seu Estilo</h1>
+            <p class="lead mb-5 text-white-50 fade-in-up delay-1">Experiência premium, sem filas de espera.</p>
+        </div>
+    </header>
+
+    <div class="container main-content fade-in-up delay-2">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card premium-card border-0 shadow-lg overflow-hidden">
+                    <div class="row no-gutters">
+                        
+                        <div class="col-md-4 bg-dark-side text-white p-4 d-flex flex-column justify-content-center align-items-center text-center">
+                            <div class="mb-4">
+                                <i class="fas fa-calendar-check fa-3x text-gold mb-3"></i>
+                                <h5 class="font-weight-bold">Horários Online</h5>
+                                <p class="small text-white-50">Selecione o dia e garanta sua vaga.</p>
+                            </div>
+                            <div id="logged-user-info" style="display:none;" class="w-100 border-top border-secondary pt-4 mt-2">
+                                <div class="avatar-circle mb-2 mx-auto"><i class="fas fa-user"></i></div>
+                                <h6 id="info-client-name" class="font-weight-bold">Nome</h6>
+                                <small id="info-client-phone" class="text-muted d-block mb-3">0000</small>
+                                <button onclick="editProfile()" class="btn btn-link btn-sm text-gold p-0">Editar Dados</button>
+                            </div>
+                            <div id="guest-alert" class="w-100 border-top border-secondary pt-4 mt-2">
+                                <i class="fas fa-lock mb-2 text-gold"></i>
+                                <p class="small mb-2">Faça login para confirmar o agendamento.</p>
+                                <button onclick="openAuthModal('login')" class="btn btn-sm btn-outline-light rounded-pill px-3">Login Rápido</button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8 p-5 bg-white">
+                            <h4 class="font-weight-bold text-dark mb-4">Selecionar Data</h4>
+                            
+                            <div class="form-group position-relative">
+                                <i class="fas fa-calendar-alt position-absolute text-muted" style="left: 15px; top: 15px;"></i>
+                                <input type="date" id="client-date" class="form-control form-control-lg pl-5 bg-light border-0 rounded-pill">
+                            </div>
+
+                            <div class="slots-header d-flex justify-content-between align-items-end mt-5 mb-3">
+                                <h5 class="font-weight-bold m-0 text-dark">Disponibilidade</h5>
+                                <div class="small">
+                                    <span class="mr-2"><span class="dot bg-success"></span> Livre</span>
+                                    <span><span class="dot bg-danger"></span> Ocupado</span>
+                                </div>
+                            </div>
+
+                            <div id="slots-area" class="row">
+                                <div class="col-12 text-center py-5">
+                                    <i class="fas fa-circle-notch fa-spin text-muted"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4 pb-5">
+            <a href="admin.html" class="text-white-50 small"><i class="fas fa-shield-alt"></i> Acesso Barbeiro</a>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-box fade-in-up">
+            <button class="close-modal" onclick="closeAuthModal()">&times;</button>
+            
+            <div id="form-login">
+                <h3 class="font-weight-bold text-center mb-1">Bem-vindo</h3>
+                <p class="text-center text-muted small mb-4">Entre para agendar seu corte</p>
+                <input type="email" id="login-email" class="form-control rounded-pill bg-light border-0 mb-3 px-4" placeholder="E-mail">
+                <input type="password" id="login-pass" class="form-control rounded-pill bg-light border-0 mb-4 px-4" placeholder="Senha">
+                <button class="btn btn-gold btn-block rounded-pill shadow-sm font-weight-bold py-2" onclick="login()">ENTRAR</button>
+                <p class="text-center mt-4 small text-muted">Ainda não tem conta? <a href="#" onclick="toggleAuthForms('register')" class="text-gold font-weight-bold">Cadastre-se</a></p>
+            </div>
+
+            <div id="form-register" style="display:none;">
+                <h3 class="font-weight-bold text-center mb-1">Criar Conta</h3>
+                <p class="text-center text-muted small mb-4">Preencha rapidinho, é só uma vez.</p>
+                <input type="text" id="reg-name" class="form-control rounded-pill bg-light border-0 mb-2 px-4" placeholder="Nome Completo">
+                <input type="tel" id="reg-phone" class="form-control rounded-pill bg-light border-0 mb-2 px-4" placeholder="WhatsApp">
+                <input type="email" id="reg-email" class="form-control rounded-pill bg-light border-0 mb-2 px-4" placeholder="E-mail">
+                <input type="password" id="reg-pass" class="form-control rounded-pill bg-light border-0 mb-4 px-4" placeholder="Senha">
+                <button class="btn btn-gold btn-block rounded-pill shadow-sm font-weight-bold py-2" onclick="register()">CRIAR CONTA</button>
+                <p class="text-center mt-4 small text-muted">Já possui cadastro? <a href="#" onclick="toggleAuthForms('login')" class="text-gold font-weight-bold">Fazer Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
