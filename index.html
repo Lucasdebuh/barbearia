@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento - Barbearia Pro</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body onload="initClient()">
+
+    <!-- Header Premium com Animação -->
+    <header class="hero-header">
+        <div class="stars"></div>
+        <div class="stars2"></div>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand animated-brand" href="#">
+                    <i class="fas fa-cut rotating"></i>
+                    <span id="nav-shop-name">Carregando...</span>
+                </a>
+                <div class="ml-auto d-flex align-items-center">
+                    <span class="badge badge-premium pulse">
+                        <i class="fas fa-star"></i> Sistema Premium
+                    </span>
+                </div>
+            </div>
+        </nav>
+        <div class="header-content">
+            <div class="container text-center">
+                <h1 class="display-3 font-weight-bold text-white mb-3 fade-in-up">
+                    <i class="fas fa-calendar-check"></i> Agende seu Horário
+                </h1>
+                <p class="lead text-white-50 fade-in-up-delay">Sistema de agendamento inteligente com pagamento online</p>
+                <div class="header-features fade-in-up-delay-2">
+                    <span class="feature-badge"><i class="fas fa-clock"></i> Tempo Real</span>
+                    <span class="feature-badge"><i class="fas fa-credit-card"></i> Pague Online</span>
+                    <span class="feature-badge"><i class="fas fa-users"></i> Escolha seu Barbeiro</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Formulário de Agendamento -->
+    <section class="booking-section py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-11">
+                    <div class="booking-card">
+                        
+                        <!-- Step Indicator -->
+                        <div class="steps-indicator">
+                            <div class="step active" data-step="1">
+                                <div class="step-number">1</div>
+                                <div class="step-label">Seus Dados</div>
+                            </div>
+                            <div class="step-line"></div>
+                            <div class="step" data-step="2">
+                                <div class="step-number">2</div>
+                                <div class="step-label">Escolha o Barbeiro</div>
+                            </div>
+                            <div class="step-line"></div>
+                            <div class="step" data-step="3">
+                                <div class="step-number">3</div>
+                                <div class="step-label">Data e Horário</div>
+                            </div>
+                            <div class="step-line"></div>
+                            <div class="step" data-step="4">
+                                <div class="step-number">4</div>
+                                <div class="step-label">Pagamento</div>
+                            </div>
+                        </div>
+
+                        <!-- Step 1: Dados do Cliente -->
+                        <div class="booking-step" id="step-1">
+                            <div class="booking-header">
+                                <i class="fas fa-user-circle"></i>
+                                <h2>Seus Dados</h2>
+                            </div>
+                            <div class="booking-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-user"></i> Nome Completo
+                                            </label>
+                                            <input type="text" id="client-name" class="form-control form-control-lg" 
+                                                   placeholder="Digite seu nome completo">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-phone"></i> WhatsApp
+                                            </label>
+                                            <input type="tel" id="client-phone" class="form-control form-control-lg" 
+                                                   placeholder="(11) 99999-9999">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-envelope"></i> E-mail (opcional)
+                                    </label>
+                                    <input type="email" id="client-email" class="form-control form-control-lg" 
+                                           placeholder="seu@email.com">
+                                </div>
+                                <button class="btn btn-primary btn-lg btn-block" onclick="nextStep(2)">
+                                    Próximo <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Escolha do Barbeiro -->
+                        <div class="booking-step hidden" id="step-2">
+                            <div class="booking-header">
+                                <i class="fas fa-user-tie"></i>
+                                <h2>Escolha seu Barbeiro</h2>
+                            </div>
+                            <div class="booking-body">
+                                <div id="barbers-list" class="barbers-grid">
+                                    <!-- Barbeiros serão carregados aqui -->
+                                </div>
+                                <div class="mt-4">
+                                    <button class="btn btn-secondary btn-lg" onclick="prevStep(1)">
+                                        <i class="fas fa-arrow-left"></i> Voltar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Data e Horário -->
+                        <div class="booking-step hidden" id="step-3">
+                            <div class="booking-header">
+                                <i class="fas fa-calendar-alt"></i>
+                                <h2>Data e Horário</h2>
+                            </div>
+                            <div class="booking-body">
+                                <div class="selected-barber-info mb-4" id="selected-barber-display">
+                                    <!-- Info do barbeiro selecionado -->
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar"></i> Escolha a Data
+                                    </label>
+                                    <input type="date" id="client-date" class="form-control form-control-lg">
+                                </div>
+
+                                <hr class="divider">
+
+                                <div class="slots-header">
+                                    <h4><i class="fas fa-clock"></i> Horários Disponíveis</h4>
+                                    <div class="legend">
+                                        <span class="legend-item">
+                                            <span class="dot available"></span> Disponível
+                                        </span>
+                                        <span class="legend-item">
+                                            <span class="dot occupied"></span> Ocupado
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div id="slots-area" class="slots-container">
+                                    <div class="text-center text-muted py-5">
+                                        <i class="fas fa-arrow-up fa-3x mb-3"></i>
+                                        <p>Selecione uma data para ver os horários</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <button class="btn btn-secondary btn-lg" onclick="prevStep(2)">
+                                        <i class="fas fa-arrow-left"></i> Voltar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Pagamento -->
+                        <div class="booking-step hidden" id="step-4">
+                            <div class="booking-header">
+                                <i class="fas fa-credit-card"></i>
+                                <h2>Forma de Pagamento</h2>
+                            </div>
+                            <div class="booking-body">
+                                <div class="booking-summary mb-4">
+                                    <h5><i class="fas fa-file-invoice"></i> Resumo do Agendamento</h5>
+                                    <div class="summary-content" id="booking-summary">
+                                        <!-- Resumo será preenchido aqui -->
+                                    </div>
+                                </div>
+
+                                <div class="payment-methods">
+                                    <label class="form-label mb-3">
+                                        <i class="fas fa-wallet"></i> Escolha como deseja pagar:
+                                    </label>
+                                    
+                                    <div class="payment-option" onclick="selectPayment('local')">
+                                        <input type="radio" name="payment" id="pay-local" value="local">
+                                        <label for="pay-local">
+                                            <div class="payment-icon">
+                                                <i class="fas fa-store"></i>
+                                            </div>
+                                            <div class="payment-info">
+                                                <h6>Pagar no Local</h6>
+                                                <p>Pague diretamente na barbearia (Dinheiro, Pix ou Cartão)</p>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div class="payment-option" onclick="selectPayment('online')">
+                                        <input type="radio" name="payment" id="pay-online" value="online">
+                                        <label for="pay-online">
+                                            <div class="payment-icon mercadopago">
+                                                <i class="fas fa-qrcode"></i>
+                                            </div>
+                                            <div class="payment-info">
+                                                <h6>Pagar Online via Mercado Pago</h6>
+                                                <p>PIX, Cartão de Crédito ou Débito</p>
+                                                <span class="badge badge-success">Recomendado</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <button class="btn btn-secondary btn-lg mr-2" onclick="prevStep(3)">
+                                        <i class="fas fa-arrow-left"></i> Voltar
+                                    </button>
+                                    <button class="btn btn-success btn-lg" onclick="confirmBooking()" id="btn-confirm">
+                                        <i class="fas fa-check"></i> Confirmar Agendamento
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-left mb-3 mb-md-0">
+                    <p class="mb-0">
+                        <i class="fas fa-cut"></i> 
+                        <span id="footer-shop-name">Carregando...</span> © 2026 - Todos os direitos reservados
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-right">
+                    <a href="admin.html" class="admin-link">
+                        <i class="fas fa-user-shield"></i> Acesso Administrativo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal de Pagamento Online -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-qrcode"></i> Pagamento via Mercado Pago
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center" id="payment-content">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Carregando...</span>
+                    </div>
+                    <p class="mt-3">Gerando link de pagamento...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <script src="script.js"></script>
+</body>
+</html>
