@@ -2,16 +2,15 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import DashboardShell, { NavItem } from "@/components/DashboardShell";
-import { LayoutDashboard, Store, Scissors, Clock, CalendarDays, CreditCard } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 const navItems: NavItem[] = [
-  { href: "/barbeiro", label: "Visão geral", icon: LayoutDashboard },
-  { href: "/barbeiro/agenda", label: "Agenda", icon: CalendarDays },
-  { href: "/barbeiro/servicos", label: "Serviços", icon: Scissors },
-  { href: "/barbeiro/horarios", label: "Horários", icon: Clock },
-  { href: "/barbeiro/perfil", label: "Perfil da barbearia", icon: Store },
-  { href: "/barbeiro/assinatura", label: "Assinatura", icon: CreditCard },
+  { href: "/barbeiro", label: "Visão geral", icon: "dashboard" },
+  { href: "/barbeiro/agenda", label: "Agenda", icon: "agenda" },
+  { href: "/barbeiro/servicos", label: "Serviços", icon: "tesoura" },
+  { href: "/barbeiro/horarios", label: "Horários", icon: "relogio" },
+  { href: "/barbeiro/perfil", label: "Perfil da barbearia", icon: "loja" },
+  { href: "/barbeiro/assinatura", label: "Assinatura", icon: "pagamento" },
 ];
 
 export default async function BarbeiroLayout({ children }: { children: React.ReactNode }) {

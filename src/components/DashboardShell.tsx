@@ -3,14 +3,43 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Scissors, LogOut, Menu, X } from "lucide-react";
+import {
+  Scissors,
+  LogOut,
+  Menu,
+  X,
+  LayoutDashboard,
+  Store,
+  Tag,
+  CreditCard,
+  CalendarDays,
+  Clock,
+  Search,
+  UserRound,
+} from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+
+// Os layouts são Server Components e só podem enviar dados serializáveis para
+// este Client Component. Por isso o ícone chega como texto e é resolvido aqui.
+const ICONS = {
+  dashboard: LayoutDashboard,
+  loja: Store,
+  tag: Tag,
+  pagamento: CreditCard,
+  agenda: CalendarDays,
+  tesoura: Scissors,
+  relogio: Clock,
+  busca: Search,
+  usuario: UserRound,
+} as const;
+
+export type IconName = keyof typeof ICONS;
 
 export type NavItem = {
   href: string;
   label: string;
-  icon: React.ElementType;
+  icon: IconName;
 };
 
 export default function DashboardShell({
@@ -47,6 +76,7 @@ export default function DashboardShell({
       <nav className="flex-1 space-y-1 px-3">
         {navItems.map((item) => {
           const active = pathname === item.href;
+          const Icon = ICONS[item.icon] ?? LayoutDashboard;
           return (
             <Link
               key={item.href}
@@ -59,7 +89,7 @@ export default function DashboardShell({
                   : "text-neutral-400 hover:bg-white/5 hover:text-white"
               )}
             >
-              <item.icon size={18} />
+              <Icon size={18} />
               {item.label}
             </Link>
           );
