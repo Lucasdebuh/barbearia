@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+// Fontes auto-hospedadas (não dependem do CDN do Google em build nem em runtime).
+import "@fontsource-variable/inter";
+import "@fontsource/playfair-display/600.css";
+import "@fontsource/playfair-display/700.css";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
   title: "BarberPro — Plataforma completa para barbearias",
@@ -18,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${playfair.variable}`}>
-      <body className={inter.className}>
+    <html lang="pt-BR">
+      <body>
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>

@@ -4,8 +4,10 @@ export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
 }
 
-export function formatBRL(value: number | string) {
-  const n = typeof value === "string" ? parseFloat(value) : value;
+// Aceita number, string ou Decimal do Prisma (que só vira número com Number()).
+export function formatBRL(value: number | string | { toString(): string }) {
+  const n = Number(value);
+  if (Number.isNaN(n)) return "R$ 0,00";
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 

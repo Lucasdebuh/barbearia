@@ -9,3 +9,6 @@ out
 /prisma/dev.db-journal
 .vercel
 tsconfig.tsbuildinfo
+
+# Prisma Client gerado
+/src/generated

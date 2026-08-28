@@ -29,8 +29,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        display: ["var(--font-playfair)", "serif"],
+        sans: ["'Inter Variable'", "Inter", "system-ui", "sans-serif"],
+        display: ["'Playfair Display'", "Georgia", "serif"],
       },
       boxShadow: {
         glow: "0 0 40px -10px rgba(201,127,34,0.45)",
