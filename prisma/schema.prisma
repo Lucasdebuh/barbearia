@@ -1,0 +1,177 @@
+// Schema do banco de dados - Barbershop SaaS
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  BARBEIRO
+  CLIENTE
+}
+
+enum BarbershopStatus {
+  PENDENTE // aguardando pagamento da assinatura
+  ATIVA
+  SUSPENSA
+}
+
+enum SubscriptionStatus {
+  PENDENTE
+  ATIVA
+  VENCIDA
+  CANCELADA
+}
+
+enum BookingStatus {
+  PENDENTE
+  CONFIRMADO
+  CONCLUIDO
+  CANCELADO
+}
+
+enum PaymentStatus {
+  PENDENTE
+  PAGO
+  FALHOU
+  REEMBOLSADO
+}
+
+enum PaymentType {
+  ASSINATURA
+  AGENDAMENTO
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String
+  email         String     @unique
+  password      String
+  role          Role       @default(CLIENTE)
+  phone         String?
+  avatarUrl     String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  barbershop    Barbershop? @relation("OwnerBarbershop")
+  bookings      Booking[]   @relation("ClientBookings")
+}
+
+model Plan {
+  id            String    @id @default(cuid())
+  name          String
+  price         Decimal   @db.Decimal(10, 2)
+  intervalDays  Int       @default(30)
+  description   String?
+  features      String[]  @default([])
+  highlighted   Boolean   @default(false)
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+
+  subscriptions Subscription[]
+}
+
+model Barbershop {
+  id           String            @id @default(cuid())
+  name         String
+  slug         String            @unique
+  description  String?
+  address      String?
+  phone        String?
+  logoUrl      String?
+  coverUrl     String?
+  status       BarbershopStatus  @default(PENDENTE)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  owner        User              @relation("OwnerBarbershop", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId      String            @unique
+
+  services     Service[]
+  bookings     Booking[]
+  workingHours WorkingHour[]
+  subscription Subscription?
+}
+
+model WorkingHour {
+  id           String     @id @default(cuid())
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId String
+  dayOfWeek    Int        // 0 = domingo ... 6 = sábado
+  startTime    String     // "09:00"
+  endTime      String     // "19:00"
+  closed       Boolean    @default(false)
+
+  @@unique([barbershopId, dayOfWeek])
+}
+
+model Service {
+  id              String     @id @default(cuid())
+  barbershop      Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId    String
+  name            String
+  description     String?
+  price           Decimal    @db.Decimal(10, 2)
+  durationMinutes Int        @default(30)
+  active          Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+
+  bookings        Booking[]
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  barbershop     Barbershop    @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId   String
+  service        Service       @relation(fields: [serviceId], references: [id])
+  serviceId      String
+  client         User          @relation("ClientBookings", fields: [clientId], references: [id])
+  clientId       String
+  date           DateTime
+  status         BookingStatus @default(PENDENTE)
+  paymentStatus  PaymentStatus @default(PENDENTE)
+  price          Decimal       @db.Decimal(10, 2)
+  notes          String?
+  createdAt      DateTime      @default(now())
+
+  payment        Payment?
+
+  @@index([barbershopId, date])
+}
+
+model Subscription {
+  id               String             @id @default(cuid())
+  barbershop       Barbershop         @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId     String             @unique
+  plan             Plan               @relation(fields: [planId], references: [id])
+  planId           String
+  status           SubscriptionStatus @default(PENDENTE)
+  startedAt        DateTime?
+  currentPeriodEnd DateTime?
+  createdAt        DateTime           @default(now())
+
+  payments         Payment[]
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  type           PaymentType
+  amount         Decimal       @db.Decimal(10, 2)
+  status         PaymentStatus @default(PENDENTE)
+  provider       String        @default("mercadopago")
+  externalId     String?
+  method         String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?
+  booking        Booking?      @relation(fields: [bookingId], references: [id])
+  bookingId      String?       @unique
+  createdAt      DateTime      @default(now())
+  paidAt         DateTime?
+  rawPayload     Json?
+
+  @@index([externalId])
+}
