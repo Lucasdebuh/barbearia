@@ -10,9 +10,10 @@ import { cn } from "@/lib/utils";
 function RegisterForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const initialTipo = params.get("tipo") === "barbeiro" ? "BARBEIRO" : params.get("tipo") === "cliente" ? "CLIENTE" : "CLIENTE";
+  const tipo = params.get("tipo")?.toLowerCase();
+  const initialTipo: "BARBEIRO" | "CLIENTE" = tipo === "barbeiro" ? "BARBEIRO" : "CLIENTE";
 
-  const [role, setRole] = useState<"BARBEIRO" | "CLIENTE">(initialTipo as any);
+  const [role, setRole] = useState<"BARBEIRO" | "CLIENTE">(initialTipo);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");

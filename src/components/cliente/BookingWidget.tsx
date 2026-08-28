@@ -81,7 +81,7 @@ export default function BookingWidget({ barbershopId, services }: { barbershopId
   if (success) {
     return (
       <div className="flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-300">
-        <CheckCircle2 size={18} /> Agendamento realizado! Redirecionando para pagamento...
+        <CheckCircle2 size={18} /> Agendamento realizado! Levando você para seus agendamentos...
       </div>
     );
   }
