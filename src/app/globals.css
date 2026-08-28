@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-ink-950 text-neutral-100 antialiased;
+}
+
+::selection {
+  @apply bg-brand-500/40 text-white;
+}
+
+.container-page {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.card {
+  @apply rounded-2xl border border-white/10 bg-ink-900/60 backdrop-blur-sm;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.btn-primary {
+  @apply btn bg-gradient-to-r from-brand-500 to-brand-400 text-ink-950 shadow-glow hover:brightness-110 active:scale-[0.98];
+}
+
+.btn-secondary {
+  @apply btn border border-white/15 bg-white/5 text-white hover:bg-white/10 active:scale-[0.98];
+}
+
+.btn-ghost {
+  @apply btn text-neutral-300 hover:bg-white/5 hover:text-white;
+}
+
+.input {
+  @apply w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 outline-none transition-colors focus:border-brand-400 focus:bg-white/[0.07];
+}
+
+.label {
+  @apply mb-1.5 block text-sm font-medium text-neutral-300;
+}
+
+.badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
+}
