@@ -15,11 +15,12 @@ Plataforma completa para gestão de barbearias com três painéis de acesso (Adm
 
 - [Next.js 14](https://nextjs.org/) (App Router) + TypeScript
 - [Tailwind CSS](https://tailwindcss.com/)
-- [Prisma ORM](https://www.prisma.io/) + PostgreSQL
+- [Prisma ORM 7](https://www.prisma.io/) + PostgreSQL (driver adapter `@prisma/adapter-pg`)
 - [NextAuth.js](https://next-auth.js.org/) (Credentials Provider)
 - [Mercado Pago SDK](https://github.com/mercadopago/sdk-nodejs) (Checkout Pro)
 - [Zod](https://zod.dev/) para validação
 - [Lucide Icons](https://lucide.dev/)
+- Fontes auto-hospedadas via `@fontsource` (sem dependência do CDN do Google)
 
 ## 🚀 Como rodar localmente
 
@@ -51,11 +52,20 @@ ADMIN_PASSWORD="Admin@123"
 
 > Sem as chaves do Mercado Pago configuradas, a plataforma funciona normalmente, porém os botões de pagamento mostram um aviso de "modo demonstração" em vez de redirecionar para o checkout real.
 
+> A URL do banco fica no `.env` e é lida pelo `prisma.config.ts` (padrão do Prisma 7 — a URL não fica mais dentro do `schema.prisma`).
+
 ### 3. Banco de dados
 
 ```bash
 npm run db:push   # cria as tabelas no banco a partir do schema.prisma
 npm run db:seed   # cria o admin, planos padrão e uma barbearia + cliente de demonstração
+```
+
+Se por algum motivo você não conseguir rodar o `db:push` (rede bloqueada, por exemplo), dá para criar as tabelas direto pelo SQL equivalente que já vem no projeto:
+
+```bash
+psql "$DATABASE_URL" -f prisma/init.sql
+npm run db:seed
 ```
 
 ### 4. Rodar em desenvolvimento
@@ -89,7 +99,7 @@ O projeto está pronto para deploy na [Vercel](https://vercel.com/):
 2. Importe o projeto na Vercel.
 3. Configure as mesmas variáveis de ambiente do `.env` no painel da Vercel.
 4. Use um banco PostgreSQL gerenciado (Neon, Supabase, Railway, RDS etc.) — bancos SQLite locais não funcionam em ambiente serverless.
-5. Após o primeiro deploy, rode `npx prisma db push` e `npx prisma db seed` apontando para o banco de produção (ou configure um passo de build/CI para isso).
+5. Após o primeiro deploy, rode `npx prisma db push` e `npm run db:seed` apontando para o banco de produção (ou configure um passo de build/CI para isso).
 
 ## 📁 Estrutura do projeto
 
@@ -103,10 +113,17 @@ src/
     api/                    → rotas de API (auth, agendamentos, pagamentos, webhook, admin)
   components/                → componentes de UI reutilizáveis
   lib/                       → prisma client, auth (NextAuth), mercado pago, utils
+  generated/prisma           → Prisma Client gerado (criado por `prisma generate`)
 prisma/
   schema.prisma              → modelo de dados
   seed.ts                    → dados de demonstração
+  init.sql                   → schema em SQL puro (alternativa ao `db:push`)
+prisma.config.ts             → configuração da CLI do Prisma (URL do banco)
 ```
+
+## ✅ Testes end-to-end
+
+O projeto foi validado com um roteiro automatizado no navegador (Playwright) cobrindo: landing page e planos vindos do banco, página pública da barbearia, login e navegação dos três painéis, cálculo de horários disponíveis, agendamento completo do cliente, aparição do agendamento na agenda do barbeiro, cadastro de nova barbearia e bloqueio de rotas por papel.
 
 ## 🔒 Segurança
 
